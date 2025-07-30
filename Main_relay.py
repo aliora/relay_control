@@ -1,5 +1,78 @@
 import usb.core
 import usb.util
+import serial
+import serial.tools.list_ports
+import time
+
+# Global röle komutları sınıfı
+class RelayCommands:
+    # CH340 Converter röle komutları
+    CH340_RELAY = {
+        1: {"on": b'\xA0\x01\x01\xA2', "off": b'\xA0\x01\x00\xA1'}
+    }
+    
+    # MSR Reader röle komutları (şimdilik aynı - MSR için farklı komutlar gelecek)
+    MSR_RELAY = {
+        1: {"on": b'\xA0\x01\x01\xA2', "off": b'\xA0\x01\x00\xA1'}  # MSR için özel binary komutlar buraya gelecek
+    }
+
+def control_relay_device(device, relay_commands, device_type="CH340", relay_delay=3):
+    """
+    Global röle kontrol fonksiyonu - farklı cihaz tipleri için kullanılabilir
+    
+    Args:
+        device: USB cihaz objesi
+        relay_commands: Röle komutları sözlüğü
+        device_type: Cihaz tipi ("CH340" veya "MSR")
+        relay_delay: Röle açık kalma süresi (saniye)
+    """
+    try:
+        if device_type == "CH340":
+            # CH340 için seri port bağlantısı bul
+            ports = serial.tools.list_ports.comports()
+            target_port = None
+            
+            for port in ports:
+                # CH340 cihazını VID:PID ile tanımla
+                if port.vid == 0x1a86 and port.pid == 0x7523:
+                    target_port = port.device
+                    break
+            
+            if target_port is None:
+                print("CH340 seri portu bulunamadı")
+                return False
+                
+            # Seri port bağlantısı aç ve komutları gönder
+            with serial.Serial(target_port, baudrate=9600, timeout=1) as ser:
+                # Röle aç
+                ser.write(relay_commands[1]["on"])
+                print(f"CH340 Converter röle açıldı: {relay_commands[1]['on'].hex()}")
+                
+                # Belirlenen süre kadar bekle
+                print(f"Röle {relay_delay} saniye açık kalacak...")
+                time.sleep(relay_delay)
+                
+                # Röle kapat
+                ser.write(relay_commands[1]["off"])
+                print(f"CH340 Converter röle kapatıldı: {relay_commands[1]['off'].hex()}")
+                return True
+                
+        elif device_type == "MSR":
+            # MSR Reader için kontrol kodu buraya gelecek
+            print(f"MSR Reader röle kontrol başlatılıyor...")
+            print(f"MSR ON komutu: {relay_commands[1]['on'].hex()}")  # MSR için binary komut
+            print(f"MSR OFF komutu: {relay_commands[1]['off'].hex()}")  # MSR için binary komut
+            
+            # MSR için özel implementasyon gerekecek (USB HID veya başka protokol)
+            # Şimdilik sadece bilgi yazdırıyor
+            print(f"MSR röle {relay_delay} saniye açık kalacak...")
+            time.sleep(relay_delay)
+            print("MSR röle kapatıldı")
+            return True
+            
+    except Exception as e:
+        print(f"{device_type} röle kontrolünde hata: {e}")
+        return False
 
 def find_usb_devices(device_list):
 
@@ -39,11 +112,13 @@ if __name__ == "__main__":
             print("MSR Reader")
             
             # MSR Reader için tetik kodu
+            control_relay_device(device, RelayCommands.MSR_RELAY, device_type="MSR", relay_delay=3)
             
         elif device_name == "CH340_Converter":
             print("CH340 Converter")
 
             # CH340 Converter için tetik kodu
+            control_relay_device(device, RelayCommands.CH340_RELAY, device_type="CH340", relay_delay=3)
 
     # Hiçbir cihaz bulunamazsa uyarı
     if not found_usb_devices:
