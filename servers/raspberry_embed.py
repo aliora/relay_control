@@ -1,55 +1,29 @@
-import os
-import subprocess
-
 from RPi import GPIO
 import time
 import socket
 
 relay_pins = {
-    1: [16, "/dev/hidraw0"],
-    2: [18, "/dev/hidraw1"]
+    1: 16,
+    2: 18
 }
 
 GPIO.setmode(GPIO.BOARD)
-
-
-def trigger_gpio(relay_pin):
-    GPIO.setup(relay_pin, GPIO.OUT)
-    GPIO.output(relay_pin, GPIO.HIGH)
-    print(f"Toggling relay {relay_number} (GPIO {relay_pin})...")
-    time.sleep(0.3)
-    GPIO.output(relay_pin, GPIO.LOW)
-    print(f"Relay {relay_number} turned off.")
-    GPIO.cleanup(relay_pin)
-
-
-def trigger_hid(hidraw_path):
-    if not os.path.exists(hidraw_path):
-        print(f"HID device not found: {hidraw_path}")
-        return
-
-    try:
-        subprocess.run(["printf", "\\xA0\\x01\\x01\\xA2"], stdout=open(hidraw_path, "wb"))
-        print("Usb Relay Opened")
-        time.sleep(0.3)
-        subprocess.run(["printf", "\\xA0\\x01\\x00\\xA1"], stdout=open(hidraw_path, "wb"))
-        print("Usb Relay Closed")
-
-    except PermissionError:
-        print(f"Permission denied while accessing {hidraw_path}. Try running with sudo.")
-    except Exception as e:
-        print(f"Unexpected error while accessing {hidraw_path}: {e}")
-
 
 def handle_relay(relay_number):
     if relay_number not in relay_pins:
         print(f"Invalid relay number: {relay_number}")
         return
 
-    gpio_pin = relay_pins[relay_number][0]
-    hidraw_path = relay_pins[relay_number][1]
-    trigger_gpio(gpio_pin)
-    trigger_hid(hidraw_path)
+    relay_pin = relay_pins[relay_number]
+    print(f"Toggling relay {relay_number} (GPIO {relay_pin})...")
+
+    GPIO.setup(relay_pin, GPIO.OUT)
+    GPIO.output(relay_pin, GPIO.LOW)
+    time.sleep(0.3)
+    GPIO.output(relay_pin, GPIO.HIGH)
+
+    print(f"Relay {relay_number} turned off.")
+    GPIO.cleanup(relay_pin)
 
 
 HOST = '0.0.0.0'

@@ -4,14 +4,14 @@ from relay_control import RelayControl
 def main():
     print("=== Relay Control Test Programı ===\n")
     
-    # CH340 Converter Test
+    # CH340 Converter Test (Main_relay.py kodları ile)
     print("1. CH340 Converter test ediliyor...")
     try:
         ch340_relay = RelayControl('ch340-converter')
-        print("CH340 Converter bulundu!")
+        print("CH340 Converter instance oluşturuldu!")
         
-        # 3 saniye röle tetikle
-        result = ch340_relay.trigger_relay(duration=3)
+        # 3 saniye röle tetikle (IP/port gerekmez)
+        result = ch340_relay.trigger_relay(relay_number=1, duration=3)
         
         if result:
             print("✓ CH340 Converter röle başarıyla tetiklendi!")
@@ -23,7 +23,7 @@ def main():
     
     print("\n" + "="*50 + "\n")
     
-    # Mevcut Rn-62 Test (örnek)
+    # Mevcut RN-62 Test
     print("2. RN-62 test ediliyor...")
     try:
         rn62_relay = RelayControl('rn-62')
@@ -39,7 +39,7 @@ def main():
 
     print("\n" + "="*50 + "\n")
 
-    # Mevcut RL-02 Test (örnek)
+    # Mevcut RL-02 Test
     print("3. RL-02 test ediliyor...")
     try:
         rl02_relay = RelayControl('rl-02')

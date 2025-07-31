@@ -23,7 +23,12 @@ class RelayControl:
         elif self.brand == 'ch340-converter':
             self.relay_instance = CH340Converter()
         else:
-            raise ValueError(f"Unsupported brand for relay control: {self.brand}")
+            raise ValueError("Unsupported brand for relay control")
 
     def trigger_relay(self, ip=None, port=None, relay_number=None, duration=3):
-        return self.relay_instance.trigger_relays(ip, port, relay_number, duration)
+        # CH340 için özel parametreler - IP/port gerekmez
+        if self.brand == 'ch340-converter':
+            return self.relay_instance.trigger_relays(relay_number=relay_number, duration=duration)
+        else:
+            # Diğer modeller için IP/port gerekli
+            return self.relay_instance.trigger_relays(ip, port, relay_number, duration)
