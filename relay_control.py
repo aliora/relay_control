@@ -23,12 +23,24 @@ class RelayControl:
         elif self.brand == 'ch340-converter':
             self.relay_instance = CH340Converter()
         else:
-            raise ValueError("Unsupported brand for relay control")
+            raise ValueError(f"Unsupported brand for relay control: {self.brand}")
 
-    def trigger_relay(self, ip=None, port=None, relay_number=None, duration=3):
-        # CH340 için özel parametreler - IP/port gerekmez
+    def trigger_relay(self, ip=None, port=None, relay_number=1, duration=3):
+        """
+        Unified interface for all relay types
+        """
+        # CH340 için IP/port gerekmez, sadece relay_number ve duration
         if self.brand == 'ch340-converter':
-            return self.relay_instance.trigger_relays(relay_number=relay_number, duration=duration)
+            return self.relay_instance.trigger_relays(
+                relay_number=relay_number, 
+                duration=duration
+            )
+        # Embedded sistemler (Raspberry, Jetson, Desktop) için sadece relay_number ve duration
+        elif self.brand in ['raspberry-embed', 'jetson-embed', 'desktop-embed']:
+            return self.relay_instance.trigger_relays(
+                relay_number=relay_number, 
+                duration=duration
+            )
+        # Network tabanlı röle sistemleri (RL-02, RN-62) için IP ve port gerekli
         else:
-            # Diğer modeller için IP/port gerekli
             return self.relay_instance.trigger_relays(ip, port, relay_number, duration)
