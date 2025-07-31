@@ -1,3 +1,4 @@
+import socket
 import serial
 import serial.tools.list_ports
 import time
@@ -42,6 +43,41 @@ class CH340Converter:
             return False
 
     def trigger_relays(self, ip=None, port=None, relay_number=None, duration=3):
-        """Ana tetik fonksiyonu - RelayControl interface'i ile uyumlu"""
-        print("CH340 Converter röle tetikleniyor...")
-        return self.control_relay_serial(self.CH340_RELAY, relay_delay=duration)
+        """
+        CH340 Converter röle tetikleme fonksiyonu
+        """
+        try:
+            # CH340 için özel binary kodları
+            relay_on_command = b'\xA0\x01\x01\xA2'   # CH340 röle açma komutu
+            relay_off_command = b'\xA0\x01\x00\xA1'  # CH340 röle kapatma komutu
+            
+            print(f"CH340 Converter röle {relay_number} tetikleniyor...")
+            
+            # Socket bağlantısı oluştur (diğer modeller gibi)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(5)
+                s.connect((ip, port))
+                
+                # Röle açma komutu gönder
+                s.send(relay_on_command)
+                print(f"CH340 röle açıldı: {relay_on_command.hex()}")
+                
+                # Belirtilen süre kadar bekle
+                print(f"Röle {duration} saniye açık kalacak...")
+                time.sleep(duration)
+                
+                # Röle kapatma komutu gönder
+                s.send(relay_off_command)
+                print(f"CH340 röle kapatıldı: {relay_off_command.hex()}")
+                
+                return True
+                
+        except socket.timeout:
+            print(f"CH340 bağlantı zaman aşımı: {ip}:{port}")
+            return False
+        except ConnectionRefusedError:
+            print(f"CH340 bağlantı reddedildi: {ip}:{port}")
+            return False
+        except Exception as e:
+            print(f"CH340 röle tetikleme hatası: {e}")
+            return False
