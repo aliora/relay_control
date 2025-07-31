@@ -4,37 +4,36 @@ import serial
 import serial.tools.list_ports
 import time
 
-# Global constants at the top of the file
+# GLOBAL: Sabit değerler
 RELAY_DELAY = 1  # seconds
 
-# Global röle komutları sınıfı
+# CLASS: Röle komut yapısı
 class RelayCommands:
-    # Tüm röle tipleri için ortak komutlar
     RELAY_COMMANDS = {
         1: {"on": b'\xA0\x01\x01\xA2', "off": b'\xA0\x01\x00\xA1'}
     }
 
 def control_relay_device(device, relay_commands, device_type="CH340"):
-
     try:
         if device_type == "CH340":
-            # CH340 için seri port bağlantısı bul
+            # INIT: Port arama
             ports = serial.tools.list_ports.comports()
             target_port = None
             
+            # SEARCH: VID/PID kontrol
             for port in ports:
-                # CH340 cihazını VID:PID ile tanımla
                 if port.vid == 0x1a86 and port.pid == 0x7523:
                     target_port = port.device
                     break
             
+            # ERROR: Port bulunamadı
             if target_port is None:
                 print("CH340 seri portu bulunamadı")
                 return False
                 
-            # Seri port bağlantısı aç ve komutları gönder
+            # CONNECT: Seri port
             with serial.Serial(target_port, baudrate=9600, timeout=1) as ser:
-                # Röle aç
+                # CMD: Röle aç
                 ser.write(relay_commands[1]["on"])
                 print(f"CH340 Converter röle açıldı: {relay_commands[1]['on'].hex()}")
                 
@@ -42,32 +41,26 @@ def control_relay_device(device, relay_commands, device_type="CH340"):
                 print(f"Röle {RELAY_DELAY} saniye açık kalacak...")
                 time.sleep(RELAY_DELAY)
                 
-                # Röle kapat
+                # CMD: Röle kapat
                 ser.write(relay_commands[1]["off"])
                 print(f"CH340 Converter röle kapatıldı: {relay_commands[1]['off'].hex()}")
                 return True
                 
         elif device_type == "MSR":
             try:
-                # Reset the device first
+                # INIT: USB reset
                 device.reset()
                 
-                # Detach kernel driver if active on any interface
-                for interface in [0, 1]:  # Check multiple interfaces
+                # CONFIG: Driver ayarları
+                for interface in [0, 1]:
                     if device.is_kernel_driver_active(interface):
-                        try:
-                            device.detach_kernel_driver(interface)
-                            print(f"Kernel driver detached from interface {interface}")
-                        except:
-                            pass
+                        device.detach_kernel_driver(interface)
                 
-                # Set configuration
+                # CONFIG: USB ayarları
                 device.set_configuration()
-                
-                # Claim interface
                 usb.util.claim_interface(device, 0)
                 
-                # Find endpoint
+                # INIT: Endpoint bulma
                 cfg = device.get_active_configuration()
                 intf = cfg[(0,0)]
                 ep = usb.util.find_descriptor(
@@ -81,7 +74,7 @@ def control_relay_device(device, relay_commands, device_type="CH340"):
                 if ep is None:
                     raise RuntimeError('MSR Endpoint bulunamadı')
                 
-                # Röle aç
+                # CMD: Röle aç
                 ep.write(relay_commands[1]["on"])
                 print(f"MSR Reader röle açıldı: {relay_commands[1]['on'].hex()}")
                 
@@ -89,7 +82,7 @@ def control_relay_device(device, relay_commands, device_type="CH340"):
                 print(f"Röle {RELAY_DELAY} saniye açık kalacak...")
                 time.sleep(RELAY_DELAY)
                 
-                # Röle kapat
+                # CMD: Röle kapat
                 ep.write(relay_commands[1]["off"])
                 print(f"MSR Reader röle kapatıldı: {relay_commands[1]['off'].hex()}")
                 return True
