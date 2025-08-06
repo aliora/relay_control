@@ -125,26 +125,31 @@ def find_usb_devices(device_list):
             print(f"Bulundu {len(devices) + 1} adet bulunu")
     return found_devices
 
-# Güncellenmiş kısım:
-class RelayControl:
-    def __init__(self):
-        self.target_devices = {
-            "MSR_Reader": (0x5131, 0x2007),
-            "CH340_Converter": (0x1a86, 0x7523),
-        }
-
-    def trigger_relay(self):
-        print("Röle kontrolü tetiklendi.")
-        found_devices = find_usb_devices(self.target_devices)
-        
-        if not found_devices:
-            print("Hiçbir cihaz bulunamadı")
-            return
+if __name__ == "__main__":
+    # Hedef cihazlar - her benzersiz VID/PID çifti için tek giriş
+    target_devices = {
+        "MSR_Reader": (0x5131, 0x2007),
+        "CH340_Converter": (0x1a86, 0x7523),  # Tek giriş
+    }
+    
+    print("USB cihazları taranıyor...")
+    found_usb_devices = find_usb_devices(target_devices)
+    print("Tarama tamamlandı.")
+    
+    # Bulunan cihazları kontrol et ve ilgili tetik kodlarını çalıştır
+    for device_name, device in found_usb_devices.items():
+        if device_name == "MSR_Reader":
+            print("MSR Reader")
             
-        for device_name, device in found_devices.items():
-            if device_name == "MSR_Reader":
-                print("MSR Reader bulundu. Kontrol ediliyor.")
-                control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="MSR")
-            elif device_name == "CH340_Converter":
-                print("CH340 Converter bulundu. Kontrol ediliyor.")
-                control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="CH340")
+            # MSR Reader için tetik kodu
+            control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="MSR")
+            
+        elif device_name == "CH340_Converter":
+            print("CH340 Converter")
+
+            # CH340 Converter için tetik kodu
+            control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="CH340")
+
+    # Hiçbir cihaz bulunamazsa uyarı
+    if not found_usb_devices:
+        print("Hiçbir cihaz bulunamadı")
