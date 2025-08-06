@@ -125,6 +125,7 @@ def find_usb_devices(device_list):
             print(f"Bulundu {len(devices) + 1} adet bulunu")
     return found_devices
 
+# Güncellenmiş kısım:
 class RelayControl:
     def __init__(self):
         self.target_devices = {
@@ -132,7 +133,7 @@ class RelayControl:
             "CH340_Converter": (0x1a86, 0x7523),
         }
 
-    def trigger_relay(self, ip, port, relay_number=None, duration=100):
+    def trigger_relay(self):
         print("Röle kontrolü tetiklendi.")
         found_devices = find_usb_devices(self.target_devices)
         

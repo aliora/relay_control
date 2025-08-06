@@ -1,19 +1,19 @@
 import subprocess
 from flask import Flask, jsonify
-from relay_control import RelayControl
+from relay_control.Main_relay import RelayControl
 
 app = Flask(__name__)
 
 @app.route('/trigger', methods=['POST'])
 def trigger_relay():
     try:
-        # main-relay sınıfını çağır
-        relay_controller = RelayControl('main-relay')
-        relay_controller.trigger_relay('0.0.0.0', 9747) # IP ve port değerlerini buraya ekleyebilirsiniz
+        # Main_relay.py içindeki sınıfı çağır
+        relay_controller = RelayControl()
+        relay_controller.trigger_relay()
         
         response = {
             "status": "success",
-            "message": "Röle kontrolü başarıyla tamamlandı.",
+            "message": "Main_relay.py betiği başarıyla çalıştırıldı.",
             "stdout": "Röle kontrolü başarıyla tamamlandı."
         }
         return jsonify(response), 200
