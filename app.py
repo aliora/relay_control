@@ -27,3 +27,4 @@ def trigger_relay():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9747)
+    # MSR Reader cihazı için röle kontrolü
