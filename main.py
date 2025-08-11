@@ -16,7 +16,7 @@ def main():
     print("\n=== USB Röle Testi ===")
     relay_control = RelayControl('usb-relay')
     # USB röle için IP/port parametreleri kullanılmaz
-    relay_control.trigger_relay('', 0, relay_number=1, duration=1000)
+    relay_control.trigger_relay('127.0.0.1', 9747, relay_number=1, duration=1000)
 
     # Jetson Embed Example
     print("\n=== Jetson Embed Röle Testi ===")
