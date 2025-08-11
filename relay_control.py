@@ -105,7 +105,6 @@ def control_relay_device(device, relay_commands, device_type="CH340"):
         return False
 
 def find_usb_devices(device_list):
-
     found_devices = {}
     
     for device_name, (vendor_id, product_id) in device_list.items():
@@ -122,8 +121,27 @@ def find_usb_devices(device_list):
                 for i, dev in enumerate(devices, 1):
                     print(f"  {device_name}_{i}: {dev}")
         else:
-            print(f"Bulundu {len(devices) + 1} adet bulunu")
+            print(f"{device_name} bulunamadı")
     return found_devices
+
+# ==============================
+# RelayControl Wrapper Class
+# ==============================
+class RelayControl:
+    def __init__(self):
+        self.commands = RelayCommands.RELAY_COMMANDS
+
+    def trigger(self, device_type="CH340"):
+        target_devices = {
+            "MSR_Reader": (0x5131, 0x2007),
+            "CH340_Converter": (0x1a86, 0x7523),
+        }
+        found_devices = find_usb_devices(target_devices)
+        if device_type == "MSR" and "MSR_Reader" in found_devices:
+            return control_relay_device(found_devices["MSR_Reader"], self.commands, device_type="MSR")
+        elif device_type == "CH340" and "CH340_Converter" in found_devices:
+            return control_relay_device(found_devices["CH340_Converter"], self.commands, device_type="CH340")
+        return False
 
 if __name__ == "__main__":
     # Hedef cihazlar - her benzersiz VID/PID çifti için tek giriş
@@ -140,14 +158,9 @@ if __name__ == "__main__":
     for device_name, device in found_usb_devices.items():
         if device_name == "MSR_Reader":
             print("MSR Reader")
-            
-            # MSR Reader için tetik kodu
             control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="MSR")
-            
         elif device_name == "CH340_Converter":
             print("CH340 Converter")
-
-            # CH340 Converter için tetik kodu
             control_relay_device(device, RelayCommands.RELAY_COMMANDS, device_type="CH340")
 
     # Hiçbir cihaz bulunamazsa uyarı
