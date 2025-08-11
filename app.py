@@ -1,7 +1,9 @@
-import subprocess
 from flask import Flask, jsonify
+import subprocess
+from flask_cors import CORS # Bu satırı ekleyin
 
 app = Flask(__name__)
+CORS(app) # Tüm rotalar için CORS'u etkinleştirin
 
 @app.route('/trigger', methods=['POST'])
 def trigger_relay():
@@ -19,7 +21,7 @@ def trigger_relay():
             # Çalışma dizinini, betiğinizin bulunduğu dizine ayarlayın
             cwd='/home/visioai/Projects/alpr-client/relay_control'
         )
-        
+
         # Betiğin başarılı bir şekilde çalıştığını belirten yanıt
         response = {
             "status": "success",
