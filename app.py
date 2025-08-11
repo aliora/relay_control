@@ -12,7 +12,7 @@ def trigger_relay():
         # Alt süreci (sub-process) başlat
         # Betiği argüman göndermeden çalıştır.
         result = subprocess.run(
-            ['python3', 'Main_relay.py'],
+            ['python3', 'relay_control.py'],
             capture_output=True,
             text=True,
             check=True,
