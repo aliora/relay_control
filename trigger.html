@@ -67,7 +67,6 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="text-2xl font-bold">Röle Tetikleyici</h1>
         <button id="triggerButton" class="text-lg">Röleyi Tetikle</button>
         <div id="responseMessage" class="hidden"></div>
     </div>
@@ -82,7 +81,7 @@
 
             // API'nin çalıştığı adres
             // Eğer app.py farklı bir sunucuda çalışıyorsa bu adresi değiştirin.
-            const url = "http://192.168.99.152:9747/trigger"; 
+            const url = "http://192.168.1.100:9747/trigger"; 
 
             try {
                 // Fetch API kullanarak POST isteği gönder
