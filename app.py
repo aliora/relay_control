@@ -6,13 +6,13 @@ app = Flask(__name__)
 @app.route('/trigger', methods=['POST'])
 def trigger_relay():
     """
-    HTTP POST isteği geldiğinde relay_control.py betiğini çalıştırır.
+    HTTP POST isteği geldiğinde Main_relay.py betiğini çalıştırır.
     """
     try:
         # Alt süreci (sub-process) başlat
         # Betiği argüman göndermeden çalıştır.
         result = subprocess.run(
-            ['python3', 'relay_control.py'],
+            ['python3', 'Main_relay.py'],
             capture_output=True,
             text=True,
             check=True,
@@ -23,7 +23,7 @@ def trigger_relay():
         # Betiğin başarılı bir şekilde çalıştığını belirten yanıt
         response = {
             "status": "success",
-            "message": "relay_control.py betiği başarıyla çalıştırıldı.",
+            "message": "Main_relay.py betiği başarıyla çalıştırıldı.",
             "stdout": result.stdout
         }
         return jsonify(response), 200
