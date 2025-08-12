@@ -289,7 +289,8 @@ def trigger_specific_relay(relay_number):
     if device_type == "MSR":
         return control_relay_device(found_usb_devices["MSR_Reader"], RelayCommands.RELAY_COMMANDS, device_type="MSR", device_index=device_index)
     elif device_type == "CH340":
-        return control_relay_device(None, RelayCommands.RELAY_COMMANDS, device_type="CH340", device_index=device_index)
+        # CH340 için device parametresi kullanılmıyor, sadece index önemli
+        return control_relay_device([], RelayCommands.RELAY_COMMANDS, device_type="CH340", device_index=device_index)
     
     return False
 
@@ -356,9 +357,9 @@ class RelayControl:
         }
         found_devices = find_usb_devices_ordered(target_devices)
         if device_type == "MSR" and "MSR_Reader" in found_devices:
-            return control_relay_device(found_devices["MSR_Reader"], self.commands, device_type="MSR")
+            return control_relay_device(found_devices["MSR_Reader"], self.commands, device_type="MSR", device_index=0)
         elif device_type in ["CH340", "MSR-CH340"]:
-            return control_relay_device(None, self.commands, device_type="CH340")
+            return control_relay_device([], self.commands, device_type="CH340", device_index=0)
         return False
 
 if __name__ == "__main__":
@@ -382,8 +383,32 @@ if __name__ == "__main__":
                 print("Veya tüm cihazları listelemek için --list kullanın.")
                 sys.exit(1)
     else:
-        print("Kullanım:")
-        print("  python relay_control.py <relay_number>  # Belirtilen relay'i tetikle")
-        print("  python relay_control.py --list          # Tüm cihazları listele")
-        print("")
-        list_all_devices()
+        # Argüman yoksa eski davranış - tüm cihazları tetikle
+        target_devices = {
+            "MSR_Reader": (0x5131, 0x2007),
+            "CH340_Converter": (0x1a86, 0x7523),
+        }
+        
+        print("USB cihazları taranıyor...")
+        found_usb_devices = find_usb_devices_ordered(target_devices)
+        print("Tarama tamamlandı.")
+        
+        # Bulunan cihazları kontrol et ve ilgili tetik kodlarını çalıştır
+        for device_name, devices in found_usb_devices.items():
+            if device_name == "MSR_Reader":
+                print("MSR Reader cihazları tetikleniyor...")
+                for i in range(len(devices)):
+                    print(f"MSR Reader #{i + 1}")
+                    control_relay_device(devices, RelayCommands.RELAY_COMMANDS, device_type="MSR", device_index=i)
+                    time.sleep(0.5)  # Cihazlar arası bekleme
+            elif device_name == "CH340_Converter":
+                print("CH340 Converter cihazları tetikleniyor...")
+                ordered_ports = find_ch340_ports_ordered()
+                for i in range(len(ordered_ports)):
+                    print(f"CH340 Converter #{i + 1}")
+                    control_relay_device([], RelayCommands.RELAY_COMMANDS, device_type="CH340", device_index=i)
+                    time.sleep(0.5)  # Cihazlar arası bekleme
+
+        # Hiçbir cihaz bulunamazsa uyarı
+        if not found_usb_devices:
+            print("Hiçbir cihaz bulunamadı")
