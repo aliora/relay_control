@@ -5,7 +5,7 @@ import urllib.parse
 import logging
 
 HOST = '0.0.0.0'
-PORT = 9747
+PORT = 9748
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
                     text=True,
                     check=True,
                     timeout=30,
-                    cwd='/home/visioai/Projects/alpr-client/relay_control'
+                    cwd='/home/kubuntu/Projects/USBRelayfinder/relay_control'
                 )
 
                 response = {
