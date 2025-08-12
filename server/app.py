@@ -3,6 +3,7 @@ import json
 import subprocess
 import urllib.parse
 import logging
+import os
 
 HOST = '0.0.0.0'
 PORT = 9748
@@ -55,9 +56,8 @@ class SimpleHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 logger.warning(f"Parameter parsing error: {e}")
 
-            cmd = ['python3', 'relay_control.py']
-            if relay_number:
-                cmd.append(str(relay_number))
+            script_path = os.path.join(os.path.dirname(__file__), '..', 'relay_control', 'relay_control.py')
+            cmd = ['python3', script_path, str(relay_number)]
 
             logger.info(f"Executing command: {' '.join(cmd)}")
 
