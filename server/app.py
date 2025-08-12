@@ -56,56 +56,20 @@ class SimpleHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 logger.warning(f"Parameter parsing error: {e}")
 
-            script_path = os.path.join(os.path.dirname(__file__), '..', 'relay_control', 'relay_control.py')
+            script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'relay_control', 'relay_control.py'))
             cmd = ['python3', script_path, str(relay_number)]
+            result = subprocess.run(cmd, capture_output=True, text=True)
 
-            logger.info(f"Executing command: {' '.join(cmd)}")
+            response = {
+                "status": "success",
+                "message": "relay_control.py script executed successfully.",
+                "relayNumber": relay_number,
+                "stdout": result.stdout.strip(),
+                "stderr": result.stderr.strip() if result.stderr else None
+            }
+            self._set_headers(200)
+            self.wfile.write(json.dumps(response).encode())
 
-            try:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    timeout=30,
-                    cwd='/home/kubuntu/Projects/USBRelayfinder/relay_control'
-                )
-
-                response = {
-                    "status": "success",
-                    "message": "relay_control.py script executed successfully.",
-                    "relayNumber": relay_number,
-                    "stdout": result.stdout.strip(),
-                    "stderr": result.stderr.strip() if result.stderr else None
-                }
-                self._set_headers(200)
-                self.wfile.write(json.dumps(response).encode())
-
-            except subprocess.TimeoutExpired:
-                logger.error("Script execution timeout")
-                self._set_headers(408)
-                self.wfile.write(json.dumps({
-                    "status": "error",
-                    "message": "Script execution timed out."
-                }).encode())
-
-            except subprocess.CalledProcessError as e:
-                logger.error(f"Script execution error: {e}")
-                self._set_headers(500)
-                self.wfile.write(json.dumps({
-                    "status": "error",
-                    "message": f"Script error: {e}",
-                    "stderr": e.stderr,
-                    "returncode": e.returncode
-                }).encode())
-
-            except Exception as e:
-                logger.error(f"Server error: {e}")
-                self._set_headers(500)
-                self.wfile.write(json.dumps({
-                    "status": "error",
-                    "message": f"Server error: {str(e)}"
-                }).encode())
         else:
             self._set_headers(404)
             self.wfile.write(json.dumps({"status": "error", "message": "Not Found"}).encode())
