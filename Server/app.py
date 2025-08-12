@@ -99,5 +99,5 @@ def health_check():
     }), 200
 
 if __name__ == '__main__':
-    logger.info("Starting Flask relay server on 0.0.0.0:9747")
-    app.run(host='0.0.0.0', port=9747, debug=True)
+    logger.info("Starting Flask relay server on 0.0.0.0:9748")
+    app.run(host='0.0.0.0', port=9748, debug=True)
